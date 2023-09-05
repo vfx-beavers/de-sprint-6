@@ -21,20 +21,20 @@ def execute_vertica(conn_info=conn_info):
   with vertica_python.connect(**conn_info) as conn:
     cur = conn.cursor()
     logging.info("Коннекшн пошёл")
-    cur.execute("DROP TABLE IF EXISTS STV2023081241__STAGING.group_log;")
+    cur.execute("DELETE from STV2023081241__STAGING.group_log;")
     cur.execute("DROP TABLE IF EXISTS STV2023081241__STAGING.group_log_rej;")
     cur.execute("""
-                    CREATE TABLE STV2023081241__STAGING.group_log
+                    CREATE TABLE IF NOT EXISTS STV2023081241__STAGING.group_log
                     (
                         group_id INT NOT NULL,
                         user_id INT,
                         user_id_from INT,
                         event varchar(50),
-                        datetime timestamp
+                        "datetime" timestamp
                     );
         """)
     cur.execute("""
-                    COPY STV2023081241__STAGING.group_log (group_id, user_id, user_id_from, event, datetime)
+                    COPY STV2023081241__STAGING.group_log (group_id, user_id, user_id_from, event, "datetime")
                     FROM LOCAL '/data/group_log.csv'
                     DELIMITER ','
                     REJECTED DATA AS TABLE STV2023081241__STAGING.group_log_rej;
